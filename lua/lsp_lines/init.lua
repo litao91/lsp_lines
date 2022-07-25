@@ -37,6 +37,37 @@ local function distance_between_cols(bufnr, lnum, start_col, end_col)
   return vim.fn.strdisplaywidth(sub, 0) -- these are indexed starting at 0
 end
 
+---@private
+local function to_severity(severity)
+  if type(severity) == 'string' then
+    return assert(
+      M.severity[string.upper(severity)],
+      string.format('Invalid severity: %s', severity)
+    )
+  end
+  return severity
+end
+
+local function filter_by_severity(severity, diagnostics)
+  if not severity then
+    return diagnostics
+  end
+
+  if type(severity) ~= 'table' then
+    severity = to_severity(severity)
+    return vim.tbl_filter(function(t)
+      return t.severity == severity
+    end, diagnostics)
+  end
+
+  local min_severity = to_severity(severity.min) or M.severity.HINT
+  local max_severity = to_severity(severity.max) or M.severity.ERROR
+
+  return vim.tbl_filter(function(t)
+    return t.severity <= min_severity and t.severity >= max_severity
+  end, diagnostics)
+end
+
 -- Registers a wrapper-handler to render lsp lines.
 -- This should usually only be called once, during initialisation.
 M.setup = function()
@@ -58,6 +89,18 @@ M.setup = function()
         },
         opts = { opts, "t", true },
       })
+
+      opts = opts or {}
+      local severity
+      if opts.virtual_lines then
+        if opts.virtual_lines.severity then
+          severity = opts.virtual_lines.severity
+        end
+      end
+      if severity then
+        print(vim.inspect(severity))
+        diagnostics = filter_by_severity(severity, diagnostics)
+      end
 
       table.sort(diagnostics, function(a, b)
         if a.lnum ~= b.lnum then
