@@ -98,7 +98,6 @@ M.setup = function()
         end
       end
       if severity then
-        print(vim.inspect(severity))
         diagnostics = filter_by_severity(severity, diagnostics)
       end
 
