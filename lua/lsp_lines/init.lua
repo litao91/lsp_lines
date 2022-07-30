@@ -43,17 +43,6 @@ M.setup = function()
     ---@param diagnostics table
     ---@param opts boolean
     show = function(namespace, bufnr, diagnostics, opts)
-      vim.validate({
-        namespace = { namespace, "n" },
-        bufnr = { bufnr, "n" },
-        diagnostics = {
-          diagnostics,
-          vim.tbl_islist,
-          "a list of diagnostics",
-        },
-        opts = { opts, "t", true },
-      })
-
       opts = opts or {}
       local severity
       if opts.virtual_lines then
@@ -64,14 +53,6 @@ M.setup = function()
       if severity then
         diagnostics = filter_by_severity(severity, diagnostics)
       end
-
-      table.sort(diagnostics, function(a, b)
-        if a.lnum ~= b.lnum then
-          return a.lnum < b.lnum
-        else
-          return a.col < b.col
-        end
-      end)
 
       local ns = vim.diagnostic.get_namespace(namespace)
       if not ns.user_data.virt_lines_ns then
