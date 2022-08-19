@@ -56,7 +56,6 @@ M.setup = function()
     ---@param diagnostics table
     ---@param opts boolean
     show = function(namespace, bufnr, diagnostics, opts)
-      print(debug.traceback())
       opts = opts or {}
       local severity
       if opts.virtual_lines then
@@ -100,7 +99,7 @@ M.setup = function()
   }
 end
 
-local toggle_value = nil
+local toggle_value = false
 
 ---@return boolean
 M.toggle = function()
